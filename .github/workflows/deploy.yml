@@ -1,0 +1,53 @@
+# Static fallback deploy: the React app on GitHub Pages. Bingo and the planet chase work fully there;
+# the contest and admin need the Node server, which Pages can't run, so they show "voting unavailable".
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react
+    env:
+      # Project pages live under /<repo>/; Vite's base, the router and the API prefix all follow BASE_PATH
+      BASE_PATH: /${{ github.event.repository.name }}/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: react/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test # CI=true on Actions, so vitest runs once instead of watching
+      - run: npm run build
+      # Pages has no SPA fallback: serve index.html for unknown paths, so deep links like /bingo work
+      - run: cp build/index.html build/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: react/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
