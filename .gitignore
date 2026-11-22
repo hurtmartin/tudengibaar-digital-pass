@@ -9,3 +9,33 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+CLAUDE.md
+workflow.md
+PLAN.md
+
+# React
+react/logs
+react/**/*.log
+react/**/*-debug.log*
+react/node_modules
+react/dist
+react/build
+react/dist-ssr
+react/**/*.local
+react/.vscode/*
+!react/.vscode/extensions.json
+react/.idea
+react/**/.DS_Store
+react/**/*.suo
+react/**/*.ntvs*
+react/**/*.njsproj
+react/**/*.sln
+react/**/*.sw?
+
+# Server
+server/node_modules
+server/public
+server/**/*.db
+server/**/*.db-*
+server/.env
+server/release.zip

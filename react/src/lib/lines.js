@@ -1,19 +1,37 @@
-export const GRID_SIZE = 3
+export const GRID_SIZE = 4
 
-// Win patterns by cell index (0–8). Rows and columns don't count.
+const LINE = [0, 1, 2, 3]
+
+// Win patterns by cell index (0–15): every row, every column, both diagonals and the four corners
 export const PATTERNS = {
-  'diag-main': [0, 4, 8],
-  'diag-anti': [2, 4, 6],
-  corners: [0, 2, 6, 8],
+  ...Object.fromEntries(LINE.map((r) => [`row-${r}`, LINE.map((c) => r * GRID_SIZE + c)])),
+  ...Object.fromEntries(LINE.map((c) => [`col-${c}`, LINE.map((r) => r * GRID_SIZE + c)])),
+  'diag-main': [0, 5, 10, 15],
+  'diag-anti': [3, 6, 9, 12],
+  corners: [0, 3, 12, 15],
 }
 
-// Names of every pattern whose cells are all completed
-export function completedPatterns(order, completedIds) {
-  const done = new Set(completedIds)
-  return Object.keys(PATTERNS).filter((name) => PATTERNS[name].every((i) => done.has(order[i])))
+// Names of every pattern whose cells are all marked
+export function completedPatterns(markedIdx) {
+  const marked = new Set(markedIdx)
+  return Object.keys(PATTERNS).filter((name) => PATTERNS[name].every((i) => marked.has(i)))
 }
 
 // Set of cell indexes that belong to at least one completed pattern
-export function patternCells(order, completedIds) {
-  return new Set(completedPatterns(order, completedIds).flatMap((name) => PATTERNS[name]))
+export function patternCells(markedIdx) {
+  return new Set(completedPatterns(markedIdx).flatMap((name) => PATTERNS[name]))
+}
+
+// Unmarked cells that are the last one missing from a win not had yet (a pattern or the full card)
+export function nearCells(markedIdx, won) {
+  const marked = new Set(markedIdx)
+  const near = new Set()
+  const goals = Object.entries(PATTERNS)
+  if (!won.includes('full')) goals.push(['full', Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => i)])
+  for (const [name, cells] of goals) {
+    if (won.includes(name)) continue
+    const missing = cells.filter((i) => !marked.has(i))
+    if (missing.length === 1) near.add(missing[0])
+  }
+  return near
 }
