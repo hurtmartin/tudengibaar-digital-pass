@@ -5,10 +5,13 @@ import { devQRPlugin} from "react-dev-qr";
 
 // https://vite.dev/config/
 export default defineConfig({
-  // GitHub Pages serves the site from /<repo-name>/
   build: {
     outDir: "build"
   },
-  base: "",
+  // One setting for subpath deploys (e.g. BASE_PATH=/tudengibaar/); router + API prefix follow it
+  base: process.env.BASE_PATH ?? "/",
+  server: {
+    proxy: { "/api": "http://localhost:8787" },
+  },
   plugins: [react(), tailwindcss(), devQRPlugin()],
 })
